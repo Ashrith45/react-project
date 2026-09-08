@@ -1,4 +1,4 @@
-import { useTriageWizard } from './hooks/useTriageWizard'
+import useTriageWizard from "./useTriageWizard.js";
 import ClipboardCard from './components/ClipboardCard'
 import SymptomChecklist from './components/SymptomChecklist'
 import FollowUpForm from './components/FollowUpForm'
