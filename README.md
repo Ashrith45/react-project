@@ -1,35 +1,37 @@
-# Symptom Triage Slip 🩺
+# Ledger 📒
 
-A branching questionnaire styled as a physical hospital intake form — pick
-symptoms on a paper "clipboard," answer only the relevant nurse-style
-follow-ups, and get a rule-based urgency result stamped on like actual
-rubber ink.
+A budget tracker styled as a real accounting ledger book — tabbed pages
+down the side, monospace right-aligned figures, cream ledger paper.
+Multi-page (React Router), with state shared across every page via
+Context + a reducer.
 
-**This is a portfolio demo, not a real medical tool.** The scoring rules
-are intentionally simplified. The app says so on every screen — don't
-present it as anything else.
+## Why this is more than a CRUD app
 
-## Why it's more than a form
+Anyone can show a list of transactions and a running total. The piece
+worth explaining in an interview is the **burn-rate projection** in
+`src/utils/finance.js` — `budgetProgress()` doesn't just show what you've
+spent so far, it looks at how many days have passed in the month, works
+out your daily spend rate, and projects where you'll land by month's end.
+That means a category can warn you it's on track to go over budget while
+you've technically only spent 50% of it — which is a genuinely more
+useful signal than a plain progress bar.
 
-Most "symptom checker" demos are a flat list of checkboxes mapped to one
-canned message. This one actually branches:
+## Pages
 
-- Follow-up questions only appear for symptoms you've selected
-  (`followUpsForSelection` in `src/utils/triage.js`)
-- Certain answers are marked `redFlag: true` (e.g. chest pain + trouble
-  breathing) and force an Emergency result immediately, overriding the
-  running score entirely
-- Otherwise, a running score from base symptom weights + follow-up weights
-  decides Urgent / Routine / Self-care
-
-That's the piece worth explaining in an interview: a small rule engine
-with an explicit short-circuit path, not just an if/else chain.
+- **Dashboard** (`/`) — this month's income/expense/net + a category
+  breakdown donut chart
+- **Transactions** (`/transactions`) — add and remove entries
+- **Budgets** (`/budgets`) — set a monthly limit per category, see
+  burn-rate projected overspend
+- **Reports** (`/reports`) — 6-month income vs. expense trend line
 
 ## Stack
 
-- React 18 + Vite, no UI library
-- All state in a single `useTriageWizard` hook — no routing needed, three
-  steps driven by one `step` value
+- React 18 + Vite
+- React Router for multi-page navigation
+- Context + `useReducer` for shared state (no prop drilling across pages)
+- Recharts for the donut and line charts
+- `localStorage` persistence, no backend
 
 ## Running locally
 
@@ -42,15 +44,22 @@ npm run dev
 
 ```
 src/
-  data/symptoms.js        symptom catalog + follow-up questions + red flags
-  utils/triage.js          scoring engine
-  hooks/useTriageWizard.js wizard state (step, selections, answers)
+  context/FinanceContext.jsx   shared state: transactions, budgets, actions
+  utils/finance.js              totals, category breakdown, trend, burn-rate projection
+  data/categories.js            category catalog with colors
   components/
-    ClipboardCard.jsx      paper + binder-clip wrapper
-    SymptomChecklist.jsx   step 1
-    FollowUpForm.jsx       step 2
-    StampResult.jsx        step 3, rendered as a rotated stamp
-    DisclaimerStrip.jsx    persistent "this is a demo" notice
-  App.jsx
-  styles.css
+    LedgerShell.jsx              tab navigation + page frame
+    StatLine.jsx                 income/expense/net row
+    CategoryDonut.jsx            pie chart
+    TrendLine.jsx                 line chart
+    TransactionForm.jsx          add-entry form
+    TransactionTable.jsx         entry list
+    BudgetBar.jsx                 progress bar + burn-rate warning
+  pages/
+    Dashboard.jsx
+    Transactions.jsx
+    Budgets.jsx
+    Reports.jsx
+  App.jsx                        routes
+  main.jsx                       router + context providers
 ```
